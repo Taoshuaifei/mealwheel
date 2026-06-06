@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "A standalone arcade slot machine for choosing where to eat, with tag weights and QR card backup.",
-  "homepage": "https://anxforever.github.io/mealwheel/",
+  "homepage": "https://taoshuaifei.github.io/mealwheel/",
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",
@@ -18,10 +18,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/AnxForever/mealwheel.git"
+    "url": "https://github.com/Taoshuaifei/mealwheel.git"
   },
   "bugs": {
-    "url": "https://github.com/AnxForever/mealwheel/issues"
+    "url": "https://github.com/Taoshuaifei/mealwheel/issues"
   },
   "license": "MIT"
 }

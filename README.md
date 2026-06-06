@@ -60,7 +60,7 @@ git init
 git add .
 git commit -m "Initial mealwheel release"
 git branch -M main
-git remote add origin https://github.com/AnxForever/mealwheel.git
+git remote add origin https://github.com/Taoshuaifei/mealwheel.git
 git push -u origin main
 ```
 
