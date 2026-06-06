@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mealwheel - Arcade Meal Picker</title>
+    <meta
+      name="description"
+      content="mealwheel is a standalone arcade slot machine for choosing where to eat, with tag weights and QR card backup."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="grid-backdrop" aria-hidden="true"></div>
+      <div class="cabinet-shadow" aria-hidden="true"></div>
+
+      <main class="stage" aria-label="今天去哪吃老虎机">
+        <section class="machine" id="machineFrame">
+          <header class="machine-marquee">
+            <div class="bulbs" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="title-lockup">
+              <p class="eyebrow">Neo-Brutalist Dinner Arcade</p>
+              <h1>今天去哪吃</h1>
+            </div>
+            <div class="status-board">
+              <span id="statusPill">READY</span>
+              <strong id="candidateCount">0</strong>
+            </div>
+          </header>
+
+          <section class="control-strip" aria-label="筛选与设置">
+            <div class="filter-box">
+              <span class="control-label">今晚口味</span>
+              <div class="tag-filter" id="tagFilter"></div>
+            </div>
+            <div class="switches">
+              <button class="toggle is-on" id="soundToggle" type="button" aria-pressed="true">
+                SOUND
+              </button>
+              <button class="toggle is-on" id="vibrationToggle" type="button" aria-pressed="true">
+                VIBE
+              </button>
+            </div>
+          </section>
+
+          <section class="reel-bank" aria-label="老虎机转轮">
+            <div class="payline" aria-hidden="true">
+              <span class="scope-grid"></span>
+              <span class="scope-scan"></span>
+              <span class="scope-crosshair"></span>
+              <span class="scope-corner corner-tl"></span>
+              <span class="scope-corner corner-tr"></span>
+              <span class="scope-corner corner-bl"></span>
+              <span class="scope-corner corner-br"></span>
+            </div>
+            <div class="reels" id="reels"></div>
+          </section>
+
+          <section class="machine-console">
+            <div class="console-screen">
+              <span>当前奖池</span>
+              <strong id="poolSummary">等待加载</strong>
+            </div>
+            <div class="lever-panel">
+              <span class="lever-copy">
+                <small id="leverHint">拖下或点击启动</small>
+                <strong id="leverLabel">PULL TO SPIN</strong>
+              </span>
+              <button class="lever" id="spinButton" type="button" aria-label="拉下拉杆开始抽签">
+                <span class="lever-rig" aria-hidden="true">
+                  <span class="lever-slot"></span>
+                  <span class="lever-arm" id="leverArm"></span>
+                  <span class="lever-knob" id="leverKnob"></span>
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <section class="winner-card hidden" id="winnerCard" aria-live="polite">
+            <p class="eyebrow">Final Dinner Verdict</p>
+            <h2 id="winnerName">等待开奖</h2>
+            <div class="winner-meta">
+              <span id="winnerArea">位置待定</span>
+              <span id="winnerWeight">权重 x3</span>
+            </div>
+            <div class="winner-tags" id="winnerTags"></div>
+            <p id="winnerNote">不要再纠结，立刻出发。</p>
+            <strong id="winnerReason">抽签机正在校准今晚的胃。</strong>
+          </section>
+        </section>
+
+        <aside class="side-console">
+          <div class="mini-card">
+            <p class="eyebrow">Machine Status</p>
+            <strong id="healthTitle">机器待命</strong>
+            <span id="healthCopy">至少 2 家餐馆可开抽。</span>
+          </div>
+          <div class="mini-card">
+            <p class="eyebrow">Last Jackpot</p>
+            <strong id="lastWinnerName">等待开奖</strong>
+          </div>
+          <div class="side-actions">
+            <button class="brutal-button button-green" id="openManagerButton" type="button">
+              管理餐馆
+            </button>
+            <button class="brutal-button button-pink" id="openShareButton" type="button">
+              备份/分享
+            </button>
+            <button class="brutal-button button-white" id="openImportButton" type="button">
+              从卡片导入
+            </button>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div class="modal hidden" id="managerModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="managerTitle">
+        <header class="modal-header">
+          <div>
+            <p class="eyebrow">Restaurant Cartridge</p>
+            <h2 id="managerTitle">餐馆池控制台</h2>
+            <span>标签决定筛选范围，权重决定中奖概率。保存后写入当前浏览器。</span>
+          </div>
+          <button class="icon-close" id="closeManagerButton" type="button" aria-label="关闭">
+            ×
+          </button>
+        </header>
+
+        <div class="modal-toolbar">
+          <button class="brutal-button button-pink" id="addRestaurantButton" type="button">
+            加一家店
+          </button>
+        </div>
+
+        <section class="tag-summary" id="tagManager" aria-label="Tag 管理入口"></section>
+
+        <div class="draft-list" id="draftList"></div>
+
+        <footer class="modal-footer">
+          <p id="draftCount">当前草稿共 0 家可用餐馆</p>
+          <div class="modal-actions">
+            <button class="brutal-button button-white" id="cancelManagerButton" type="button">
+              先不改了
+            </button>
+            <button class="brutal-button button-green" id="saveDraftsButton" type="button">
+              保存并装填
+            </button>
+          </div>
+        </footer>
+      </section>
+    </div>
+
+    <div class="modal hidden" id="shareModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-share-modal="true"></div>
+      <section class="modal-panel share-modal-panel" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+        <header class="modal-header">
+          <div>
+            <p class="eyebrow">Backup Card</p>
+            <h2 id="shareTitle">备份/分享</h2>
+            <span>生成一张含二维码的数据卡片，二维码内包含当前已保存的 tag 和餐馆。</span>
+          </div>
+          <button class="icon-close" id="closeShareModalButton" type="button" aria-label="关闭分享">
+            ×
+          </button>
+        </header>
+
+        <section class="share-workbench">
+          <label>
+            <span>卡片备注（15字内）</span>
+            <input class="draft-input" id="shareRemarkInput" maxlength="15" placeholder="比如：我的周末饭库" />
+          </label>
+          <button class="brutal-button button-green" id="generateShareButton" type="button">
+            生成卡片
+          </button>
+          <p class="share-status" id="shareStatus">当前数据会先压缩，再写入单张二维码。</p>
+          <div class="share-preview hidden" id="sharePreview">
+            <canvas id="shareCanvas" width="1080" height="1500" aria-label="二维码分享卡片预览"></canvas>
+            <button class="brutal-button button-pink" id="saveShareCardButton" type="button">
+              保存到相册
+            </button>
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <div class="modal hidden" id="importModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-import-modal="true"></div>
+      <section class="modal-panel import-modal-panel" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+        <header class="modal-header">
+          <div>
+            <p class="eyebrow">Import Card</p>
+            <h2 id="importTitle">从卡片导入</h2>
+            <span>选择别人分享的二维码卡片图片，识别后可全覆盖或与当前数据合并。</span>
+          </div>
+          <button class="icon-close" id="closeImportModalButton" type="button" aria-label="关闭导入">
+            ×
+          </button>
+        </header>
+
+        <section class="import-workbench">
+          <input class="hidden" id="importFileInput" type="file" accept="image/*" />
+          <button class="brutal-button button-green" id="chooseImportFileButton" type="button">
+            选择卡片图片
+          </button>
+          <p class="share-status" id="importStatus">等待选择图片。</p>
+          <div class="import-preview hidden" id="importPreview">
+            <p class="eyebrow">Card Payload</p>
+            <strong id="importSummary">未识别数据</strong>
+            <span id="importMeta">请选择一张分享卡片。</span>
+            <div class="modal-actions">
+              <button class="brutal-button button-pink" id="overwriteImportButton" type="button">
+                全覆盖
+              </button>
+              <button class="brutal-button button-green" id="mergeImportButton" type="button">
+                合并
+              </button>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <div class="modal hidden" id="tagModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-tag-modal="true"></div>
+      <section class="modal-panel tag-modal-panel" role="dialog" aria-modal="true" aria-labelledby="tagManagerTitle">
+        <header class="modal-header tag-modal-header">
+          <div>
+            <p class="eyebrow">Tag Control Deck</p>
+            <h2 id="tagManagerTitle">规范分类</h2>
+            <span>Tag 会用于筛选和餐馆归类，保存后立即更新当前浏览器的数据。</span>
+          </div>
+          <button class="icon-close" id="closeTagModalButton" type="button" aria-label="关闭 Tag 管理">
+            ×
+          </button>
+        </header>
+
+        <div class="modal-toolbar tag-modal-toolbar">
+          <button class="brutal-button button-green" id="addTagButton" type="button">
+            新增 Tag
+          </button>
+        </div>
+
+        <section class="tag-manager" id="tagModalList" aria-label="Tag 列表"></section>
+
+        <footer class="modal-footer">
+          <p id="tagDraftCount">当前共 0 个 tag</p>
+          <div class="modal-actions">
+            <button class="brutal-button button-white" id="cancelTagModalButton" type="button">
+              取消
+            </button>
+            <button class="brutal-button button-green" id="saveTagsButton" type="button">
+              保存 Tag
+            </button>
+          </div>
+        </footer>
+      </section>
+    </div>
+
+    <div class="toast hidden" id="toast"></div>
+
+    <script src="./vendor/fflate/umd/index.js"></script>
+    <script src="./vendor/qrcode-generator/qrcode.js"></script>
+    <script src="./vendor/jsqr/dist/jsQR.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
