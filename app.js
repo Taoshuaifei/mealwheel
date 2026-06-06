@@ -1,7 +1,7 @@
 const STORAGE_KEY = "mealwheel-restaurants";
 const TAGS_STORAGE_KEY = "mealwheel-tags";
 const SETTINGS_KEY = "mealwheel-settings";
-const COLOR_OPTIONS = ["pink", "green", "blue", "yellow", "orange"];
+const COLOR_OPTIONS = ["pink", "green", "blue", "yellow", "orange", "purple"];
 const MAX_TAGS = 15;
 const MAX_RESTAURANTS = 50;
 const MAX_TAGS_PER_RESTAURANT = 3;
@@ -24,6 +24,7 @@ const COLOR_META = {
   blue: { bg: "#00d9ff", fg: "#101010", label: "blue" },
   yellow: { bg: "#ffb000", fg: "#101010", label: "yellow" },
   orange: { bg: "#ff6b00", fg: "#ffffff", label: "orange" },
+  purple: { bg: "#9966cc", fg: "#101010", label: "purple" },
 };
 
 const DEFAULT_TAGS = [
